@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+}
+
+group 'cn.tonyn'
+version '0.5.1-dev'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    implementation files('libs/mirai-core-all-2.3.2-all.jar')
+    compile group: 'org.apache.poi', name: 'poi', version: '3.9';
+    compile group: 'org.apache.poi', name: 'poi-excelant', version: '3.9';
+    compile group: 'org.apache.poi', name: 'poi-scratchpad', version: '3.9';
+    implementation 'cn.hutool:hutool-all:5.3.4'
+}
+
+test {
+    useJUnitPlatform()
+}
