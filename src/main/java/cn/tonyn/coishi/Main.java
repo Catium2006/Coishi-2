@@ -98,9 +98,11 @@ public class Main {
         (new File("data/config/devices")).mkdirs();
         (new File("data/msg")).mkdirs();
         (new File("data/pictures/random")).mkdirs();
+        (new File("data/pictures/specifics")).mkdirs();
         (new File("data/pictures/all")).mkdirs();
         (new File("data/FakeAI/records")).mkdirs();
         (new File("data/cache/pictures/maps")).mkdirs();
+
         Log.write("==========START==========");
         File e=new File("QQnum.txt");
         File f=new File("pwd.txt");

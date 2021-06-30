@@ -21,7 +21,13 @@ import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.message.data.Image;
+import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.ExternalResource;
+import oshi.SystemInfo;
+import oshi.hardware.HardwareAbstractionLayer;
+import oshi.software.os.OperatingSystem;
+
+import javax.swing.*;
 
 public class EventHandler {
     Bot MyBot;
@@ -39,9 +45,57 @@ public class EventHandler {
 
         msg2=msg1;
         msg1=msg;
+        Image img=null;
+        if(msg.contains("[图片]")){
+            //分解含图片句,超过1个则忽略
+            String temp=msg;
+            temp=temp.replace("[图片]","");
+            if(!temp.contains("[图片]")){
+                //不含第二个图片则处理,否则仍按照普通消息
+                img=event.getMessage().get(Image.Key);
+                Download.download(Image.queryUrl(img),"data/pictures/specifics/"+img.getImageId());
+                msg1=msg1.replace(
+                        "[图片]",
+                        ("$"+
+                                img.getImageId()+"$"
+                        )
+                );
+            }
+
+        }
         FakeAI.record(msg2,msg1,""+Sender);
-        if(FakeAI.getAnswer(msg1)!=null&&ProcessingLevel.get(event.getGroup())>0){
-            event.getGroup().sendMessage(FakeAI.getAnswer(msg1));
+        if(
+                FakeAI.getAnswer(msg1)!=null && ProcessingLevel.get(event.getGroup())>0 && (!msg.contains("#"))&&(!msg.contains("*"))
+        ){
+            Log.write("Reading something from FakeAI...");
+            //判断消息非空 处理级别 无特殊指令(非法字符)
+            String s=FakeAI.getAnswer(msg1);
+            System.out.println(s);
+            if(s.contains("$")){
+                //有没有图片
+                Log.write("Msg Contains Image");
+                //注意只有半个括号
+                String id=s.substring(s.indexOf("{"),s.indexOf("}")+5);
+                System.out.println(id);
+
+                String _else=s.replace("$"+id,"").replace("$","");
+                System.out.println(_else);
+
+                Image img_s=buildImageById(id,event);
+
+                MessageChainBuilder msb=new MessageChainBuilder();
+                msb.add(_else);
+                msb.add(img_s);
+                event.getGroup().sendMessage(msb.asMessageChain());
+                System.out.println("Send:"+s);
+
+            }else{
+                Log.write("Msg Not contains Image");
+                event.getGroup().sendMessage(FakeAI.getAnswer(msg1));
+            }
+
+
+
         }
 
         if(msg.contains("[图片]")){
@@ -57,7 +111,7 @@ public class EventHandler {
         }
         System.out.println("Processing Level: "+ProcessingLevel.get(event.getGroup()));
         if(ProcessingLevel.get(event.getGroup())>0) {
-            System.out.println("Handling this command...");
+            System.out.println("Handling this msg...");
             if(msg.startsWith("*")) {
                 //命令
                 msg=msg.replace("*", "");
@@ -173,52 +227,6 @@ public class EventHandler {
                     File f=new File("data/cache/pictures/maps/map.png");
                     Image image=event.getGroup().uploadImage(ExternalResource.create(f));
                     event.getGroup().sendMessage(image); // 发送图片
-                    /*for(String[] urlss:urls){
-                        for(String urlsss:urlss){
-                            urls[lx][ly]=host+"/tiles/world/flat/-1_1/zzz_"+x+"_"+y+".png";
-                            System.out.println(urls[lx][ly]);
-                            if(y<16){
-                                y+=8;
-                            }else{
-                                y=0;
-                            }
-
-                        }
-
-
-
-                    }*/
-
-
-                    /*FOR EXAMPLE
-
-
-                    String url__32_32=host+"/tiles/world/flat/-1_1/zzzzz_-32_32.png";
-                    String url__32_0=host+"/tiles/world/flat/-1_1/zzzzz_-32_0.png";
-                    String url_0_32=host+"/tiles/world/flat/-1_1/zzzzz_0_32.png";
-                    String url_0_0=host+"/tiles/world/flat/-1_1/zzzzz_0_0.png";
-
-                    BufferedImage bf0=ImagesTool.getBufferedImageFromUrl(url__32_32);
-                    BufferedImage bf1=ImagesTool.getBufferedImageFromUrl(url__32_0);
-
-                    BufferedImage bf2=ImagesTool.getBufferedImageFromUrl(url_0_32);
-                    BufferedImage bf3=ImagesTool.getBufferedImageFromUrl(url_0_0);
-                    try{
-                        BufferedImage mi0=ImagesTool.mergeImage(bf0,bf1,false);
-                        BufferedImage mi1=ImagesTool.mergeImage(bf2,bf3,false);
-
-                        BufferedImage mi2=ImagesTool.mergeImage(mi0,mi1,true);
-                        ImagesTool.SaveImageFile(mi2,"data/cache/pictures/maps/map.png");
-                        File f=new File("data/cache/pictures/maps/map.png");
-
-                        Image image=event.getGroup().uploadImage(ExternalResource.create(f));
-                        event.getGroup().sendMessage(image); // 发送图片
-                    }catch (IOException e){
-                        e.printStackTrace();
-                        Log.write(e.getMessage(),"IOException");
-                    }
-
-                    * */
 
 
                 }
@@ -271,6 +279,20 @@ public class EventHandler {
                         event.getGroup().sendMessage("设置成功");
                     }
 
+                }
+                if(msg.equals("info")||msg.equals("信息")){
+                    String send;
+
+                    SystemInfo si = new SystemInfo();
+                    HardwareAbstractionLayer hal = si.getHardware();
+                    OperatingSystem os = si.getOperatingSystem();
+
+                    double Mt=hal.getMemory().getTotal()/(1024*1024*1024);
+                    double Mu=(hal.getMemory().getAvailable()-Mt)/(1024*1024*1024);//Bytes to GBytes
+                    long uptime=((new Date()).getTime()-Main.StartTime)/60000;//ms to seconds
+                    send="Coishi running on:"+os+"\r\nCPU:"+hal.getProcessor()+"\r\nMemory:"+Mu+"GB/"+Mt+"GB\r\nUptime:"+uptime+"min";
+                    event.getGroup().sendMessage(send) ;
+                    System.out.println(send);
                 }
             }else {
                 event.getGroup().sendMessage(msg+":permission denied");
@@ -368,5 +390,19 @@ public class EventHandler {
             Thread.currentThread().interrupt();
         }
         System.exit(0);
+    }
+    Image buildImageById(String id,GroupMessageEvent event){
+        //通用png文件后缀
+        File f=new File("data/pictures/specifics/"+id);
+        if(f.isFile()){
+            ExternalResource er=ExternalResource.create(f);
+            Image img=event.getGroup().uploadImage(er);
+            return img;
+        }else{
+            ExternalResource er=ExternalResource.create(new File("data/pictures/FileNotFound.png"));
+            Image img=event.getGroup().uploadImage(er);
+            return img;
+        }
+
     }
 }

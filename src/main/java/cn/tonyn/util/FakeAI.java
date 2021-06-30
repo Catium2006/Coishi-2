@@ -1,5 +1,6 @@
 package cn.tonyn.util;
 
+import net.mamoe.mirai.message.data.Image;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -11,43 +12,54 @@ import java.util.Random;
 
 public class FakeAI {
     public static int MaxAnswerPerQuestion=64;
-    public static void record(String question,String answer,String who){
-        File qf=new File("data/FakeAI/records/"+question+".xlsx");
-        try{
-            if(!qf.isFile()){
-                XSSFWorkbook workbook=new XSSFWorkbook();
-                XSSFSheet sheet=workbook.createSheet();
-                sheet.createRow(0).createCell(0);
-                sheet.createRow(1).createCell(0);
-                sheet.createRow(2).createCell(0);
-                XSSFRow row0=sheet.getRow(0);
-                XSSFCell cell0=row0.getCell(0);
-                cell0.setCellValue(0);
-                workbook.write(new FileOutputStream(qf));
-            }else{
-                XSSFWorkbook workbook=new XSSFWorkbook(new FileInputStream(qf));
-                XSSFSheet sheet=workbook.getSheetAt(0);
-                XSSFRow row0=sheet.getRow(0);
-                XSSFRow row1=sheet.getRow(1);
-                XSSFRow row2=sheet.getRow(2);
-                //获得当前记录总数
-                XSSFCell cell_line0=row0.getCell(0);
-                int i= (int) cell_line0.getNumericCellValue();
-                i++;
-                XSSFCell cell_line1=row1.createCell(i);
-                cell_line1.setCellValue(answer);
-
-                XSSFCell cell_line2=row2.createCell(i);
-                cell_line2.setCellValue(who);
-
-                //记录数自加*d
-                cell_line0.setCellValue(i);
-                workbook.write(new FileOutputStream(qf));
-            }
-
-        }catch (IOException e){
-            Log.write(e.getMessage());
+    public static void record(String question, String answer, String who){
+        if(question.startsWith("_")){
+            return;
         }
+        if(question.length()<=128){
+            File qf=new File("data/FakeAI/records/"+question+".xlsx");
+            try{
+                if(!qf.isFile()){
+                    XSSFWorkbook workbook=new XSSFWorkbook();
+                    XSSFSheet sheet=workbook.createSheet();
+                    sheet.createRow(0).createCell(0);
+                    sheet.createRow(1).createCell(0);
+                    sheet.createRow(2).createCell(0);
+                    XSSFRow row0=sheet.getRow(0);
+                    XSSFCell cell0=row0.getCell(0);
+                    cell0.setCellValue(0);
+                    workbook.write(new FileOutputStream(qf));
+                    Log.write("File created:"+qf,"IOStream");
+                    //递归实现记录
+                    record(question,answer,who);
+                }else{
+                    XSSFWorkbook workbook=new XSSFWorkbook(new FileInputStream(qf));
+                    XSSFSheet sheet=workbook.getSheetAt(0);
+                    XSSFRow row0=sheet.getRow(0);
+                    XSSFRow row1=sheet.getRow(1);
+                    XSSFRow row2=sheet.getRow(2);
+                    //获得当前记录总数
+                    XSSFCell cell_line0=row0.getCell(0);
+                    int i= (int) cell_line0.getNumericCellValue();
+                    i++;
+                    XSSFCell cell_line1=row1.createCell(i);
+                    cell_line1.setCellValue(answer);
+
+                    XSSFCell cell_line2=row2.createCell(i);
+                    cell_line2.setCellValue(who);
+
+                    //记录数自加
+                    cell_line0.setCellValue(i);
+                    workbook.write(new FileOutputStream(qf));
+                }
+
+            }catch (IOException e){
+                Log.write(e.getMessage());
+            }
+        }else{
+            Log.write("Too long filename!(>128)","Error");
+        }
+
 
     }
 
