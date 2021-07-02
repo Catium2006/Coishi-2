@@ -3,8 +3,9 @@
 ## About
 嘛 之前的安卓版时间太长就弃坑了,主要是运行效果不理想,现在转到普通的JVM平台了,也可以实现更多功能.  
 咱的gradle有亿点问题,导致Mirai包拉不下来,只能加进libs目录了,下载尺寸大别怪我....  
-[备用仓库]("http://www.tonyn.cn/git/Coishi-2")(不定期更新)  
-[Jar下载](http://www.tonyn.cn/download/Coishi_with_utf-8.jar)(不定期更新)  
+
+ [备用仓库](http://www.tonyn.cn/git/Coishi-2)(不定期更新)  
+ [Jar下载](http://www.tonyn.cn/download/Coishi_with_utf-8.jar)(不定期更新)  
 以上两个链接不一定有效,试一下吧
 ## 用法
 1.克隆仓库  
