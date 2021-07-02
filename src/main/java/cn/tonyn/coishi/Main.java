@@ -11,26 +11,33 @@ import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.utils.BotConfiguration;
+
+import java.awt.*;
 import java.io.File;
 import java.util.Date;
 import cn.tonyn.bot.EventHandler;
 import cn.tonyn.util.Log;
 import cn.tonyn.file.TextFile;
 
+import javax.swing.*;
+
+import static cn.tonyn.coishi.Swapper.VERSION;
+
 public class Main {
     /*这个类是程序的主要部分
      *
      * */
-    public static boolean debug=false;
-    public static long StartTime=0;
-    public static long BotNumber=0;
+
+
+
+
     public static void main(String[] args) {
         //初始化
         StartUp();
 
         //获取登录信息
         long QQnum=Long.valueOf(TextFile.Read("QQnum.txt")).longValue();
-        BotNumber=QQnum;
+        Swapper.BotNumber=QQnum;
         String pwds=TextFile.Read("pwd.txt");
         Log.write("当前登录账号:"+QQnum+"密码:"+pwds);
         (new File("data/msg/"+QQnum)).mkdirs();
@@ -87,10 +94,10 @@ public class Main {
         bot.join(); // 阻塞当前线程直到 bot 离线
     }
 
-    public static void StartUp() {
+    static void StartUp() {
 
         Date date = new Date();
-        StartTime=date.getTime();
+        Swapper.StartTime=date.getTime();
         //创建必要文件和目录
         (new File("data/log")).mkdirs();
         (new File("data/config/friends")).mkdirs();
@@ -118,5 +125,7 @@ public class Main {
         }
 
     }
+
+
 
 }

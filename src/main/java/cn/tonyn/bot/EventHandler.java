@@ -3,10 +3,12 @@ package cn.tonyn.bot;
 
 import cn.hutool.core.util.StrUtil;
 import cn.tonyn.coishi.Main;
+import cn.tonyn.coishi.Swapper;
 import cn.tonyn.util.FakeAI;
 import cn.tonyn.util.ImagesTool;
 import cn.tonyn.util.Log;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +29,7 @@ import oshi.SystemInfo;
 import oshi.hardware.HardwareAbstractionLayer;
 import oshi.software.os.OperatingSystem;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class EventHandler {
@@ -73,7 +76,7 @@ public class EventHandler {
             System.out.println(s);
             if(s.contains("$")){
                 //有没有图片
-                Log.write("Msg Contains Image");
+                //Log.write("Msg Contains Image");
                 //注意只有半个括号
                 String id=s.substring(s.indexOf("{"),s.indexOf("}")+5);
                 System.out.println(id);
@@ -90,7 +93,7 @@ public class EventHandler {
                 System.out.println("Send:"+s);
 
             }else{
-                Log.write("Msg Not contains Image");
+                //Log.write("Msg Not contains Image");
                 event.getGroup().sendMessage(FakeAI.getAnswer(msg1));
             }
 
@@ -247,8 +250,8 @@ public class EventHandler {
                     exit();
                 }
                 if(msg.equals("debug")) {
-                    Main.debug=!Main.debug;
-                    if(Main.debug) {
+                    Swapper.debug=!Swapper.debug;
+                    if(Swapper.debug) {
                         event.getGroup().sendMessage("Debug模式已开启");
                         MyBot.getFriend(148125778).sendMessage(event.getSenderName()+"开启了Debug模式");
                         Log.write("Debug模式已开启","Debug");
@@ -289,10 +292,33 @@ public class EventHandler {
 
                     double Mt=hal.getMemory().getTotal()/(1024*1024*1024);
                     double Mu=(hal.getMemory().getAvailable()-Mt)/(1024*1024*1024);//Bytes to GBytes
-                    long uptime=((new Date()).getTime()-Main.StartTime)/60000;//ms to seconds
-                    send="Coishi running on:"+os+"\r\nCPU:"+hal.getProcessor()+"\r\nMemory:"+Mu+"GB/"+Mt+"GB\r\nUptime:"+uptime+"min";
-                    event.getGroup().sendMessage(send) ;
-                    System.out.println(send);
+                    long uptime=((new Date()).getTime()-Swapper.StartTime)/60000;//ms to seconds
+                    send="Coishi running on:"+os+"\r\nCPU:"+hal.getProcessor()+"\r\nMemory:"+Mu+"GB/"+Mt+"GB\r\nUptime:"+uptime+"min\r\n当前屏幕:";
+                    try{
+                        Dimension screen;
+                        Rectangle rect;
+                        screen = Toolkit.getDefaultToolkit().getScreenSize();
+                        rect = new Rectangle(screen);
+                        Robot robot=new Robot();
+                        BufferedImage _img = robot.createScreenCapture(rect);
+
+                        File f=new File("data/cache/pictures/screen.png");
+                        ImageIO.write(_img,"PNG",f);
+                        Image image=event.getGroup().uploadImage(ExternalResource.create(f));
+
+                        MessageChainBuilder msb=new MessageChainBuilder();
+                        msb.add(send);
+                        msb.add(image);
+                        event.getGroup().sendMessage(msb.asMessageChain()) ;
+
+                    }catch(AWTException e){
+                        e.printStackTrace();
+                        Log.write(e.getMessage(),"Error");
+                    }catch (IOException e){
+                        e.printStackTrace();
+                        Log.write(e.getMessage(),"IOException");
+                    }
+
                 }
             }else {
                 event.getGroup().sendMessage(msg+":permission denied");
@@ -318,7 +344,7 @@ public class EventHandler {
             Log.write("下载:"+image+" ("+fileUrl+")");
             Download.download(fileUrl,FilePath);
         }
-        if(Main.debug) {
+        if(Swapper.debug) {
             Log.write("收到好友消息:"+msg);
         }
 
@@ -330,8 +356,8 @@ public class EventHandler {
                 exit();
             }
             if(msg.equals("Debug")) {
-                Main.debug=!Main.debug;
-                if(Main.debug) {
+                Swapper.debug=!Swapper.debug;
+                if(Swapper.debug) {
                     event.getFriend().sendMessage("Debug模式已开启");
                     MyBot.getFriend(148125778).sendMessage(event.getSenderName()+"开启了Debug模式");
                     Log.write("Debug模式已开启","Debug");
