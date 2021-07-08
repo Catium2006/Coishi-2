@@ -80,6 +80,9 @@ public class FakeAI {
                 int i= (int) cell_line0.getNumericCellValue()+1;
                 Random r=new Random();
                 XSSFCell cell_line1=row1.getCell(r.nextInt(i));
+                if(cell_line1==null){
+                    return "";
+                }
                 String s=cell_line1.getStringCellValue();
                 return s;
             }
@@ -94,6 +97,7 @@ public class FakeAI {
         File qf=new File("data/FakeAI/records/"+question+".xlsx");
         try{
             if(!qf.isFile()){
+                System.out.println("no such file :"+question+".xlsx");
                 return null;
             }
             if(qf.isFile()){

@@ -18,8 +18,7 @@ public class Log {
     public static void write(String event) {
         //日志
         event="[Info] "+event;
-        Swapper.LOG=Swapper.LOG.substring(Swapper.LOG.length()-MAXSIZE);
-        Swapper.LOG=Swapper.LOG+event+"\r\n";
+
 
         File log = new File("data/log/Info.log");
         Date date = new Date();
@@ -42,8 +41,7 @@ public class Log {
     }
     public static void write(String event,String label) {
         event="["+label+"] "+event;
-        Swapper.LOG=Swapper.LOG.substring(Swapper.LOG.length()-MAXSIZE);
-        Swapper.LOG=Swapper.LOG+event+"\r\n";
+
 
         File log = new File("data/log/"+label+".log");
         Date date = new Date();
@@ -66,8 +64,7 @@ public class Log {
     }
     public static void msg(String msg,String label,long number) {
         File f=new File("data/msg/"+ Swapper.BotNumber+"/"+label+"("+number+").txt");
-        Swapper.MSG=Swapper.MSG.substring(Swapper.LOG.length()-MAXSIZE);
-        Swapper.MSG=Swapper.MSG+label+number+":"+msg+"\r\n";
+
         FileWriter writer = null;
         SimpleDateFormat bjSdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");     // 北京
         bjSdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));  // 设置北京时区

@@ -239,9 +239,6 @@ public class EventHandler {
 
         //如果是超级管理员
         if(msg.startsWith("#")) {
-
-
-
             if((ProcessingLevel.get(MyBot.getFriend(event.getSender().getId()))==20)) {
                 msg=msg.replace("#", "");
                 if(msg.equals("botoff")) {
@@ -320,6 +317,7 @@ public class EventHandler {
                     }
 
                 }
+
             }else {
                 event.getGroup().sendMessage(msg+":permission denied");
             }
