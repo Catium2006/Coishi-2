@@ -3,6 +3,8 @@ package cn.tonyn.coishi;
 
 
 import cn.tonyn.bot.ProcessingLevel;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
 import net.mamoe.mirai.event.GlobalEventChannel;
@@ -12,33 +14,41 @@ import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.utils.BotConfiguration;
 
-import java.awt.*;
 import java.io.File;
 import java.util.Date;
 import cn.tonyn.bot.EventHandler;
 import cn.tonyn.util.Log;
 import cn.tonyn.file.TextFile;
 
-import javax.swing.*;
 
-import static cn.tonyn.coishi.Swapper.VERSION;
 
 public class Main {
-    /*这个类是程序的主要部分
+    /*入口
      *
      * */
-
-
-
 
     public static void main(String[] args) {
         //初始化
         StartUp();
 
         //获取登录信息
-        long QQnum=Long.valueOf(TextFile.Read("QQnum.txt")).longValue();
+        String json;
+        File f=new File("login.json");
+        if(f.isFile()){
+            json=TextFile.Read("login.json");
+        }else{
+            Log.write("没有登录账户密码文件!(login.json)");
+            json=null;
+            TextFile.Write(f,"{\"QQNumber\": \"0000000000\", \"Password\": \"example*#*#\"}");
+            System.exit(1);
+        }
+
+        //登录信息改用json储存
+        JSONObject obj = JSON.parseObject(json);
+
+        long QQnum=obj.getLong("QQNumber");
         Swapper.BotNumber=QQnum;
-        String pwds=TextFile.Read("pwd.txt");
+        String pwds=obj.getString("Password");
         Log.write("当前登录账号:"+QQnum+"密码:"+pwds);
         (new File("data/msg/"+QQnum)).mkdirs();
 
@@ -46,7 +56,8 @@ public class Main {
         Bot bot = BotFactory.INSTANCE.newBot(QQnum, pwds, new BotConfiguration() {{
             // 配置
             setProtocol(MiraiProtocol.ANDROID_PAD);
-            fileBasedDeviceInfo("data/config/devices/"+QQnum+".json");
+            //device文件放在根目录
+            fileBasedDeviceInfo(QQnum+".json");
         }});
 
         bot.login();
@@ -102,7 +113,6 @@ public class Main {
         (new File("data/log")).mkdirs();
         (new File("data/config/friends")).mkdirs();
         (new File("data/config/groups")).mkdirs();
-        (new File("data/config/devices")).mkdirs();
         (new File("data/msg")).mkdirs();
         (new File("data/pictures/random")).mkdirs();
         (new File("data/pictures/specifics")).mkdirs();
@@ -111,18 +121,6 @@ public class Main {
         (new File("data/cache/pictures/maps")).mkdirs();
 
         Log.write("==========START==========");
-        File e=new File("QQnum.txt");
-        File f=new File("pwd.txt");
-        if(!e.isFile()) {
-            TextFile.Write(e, "请将此文件内容改为QQ号");
-            Log.write("缺少QQ号文件(QQnum.txt)", "Error");
-            System.exit(1);
-        }
-        if(!f.isFile()) {
-            TextFile.Write(f, "请将此文件内容改为密码");
-            Log.write("缺少密码文件(pwd.txt)", "Error");
-            System.exit(1);
-        }
 
     }
 
